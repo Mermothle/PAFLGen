@@ -24,7 +24,7 @@ def codeGen():
     
 
     completedCode = codeLetter + codeT + codeRank + codeDash + codeNumbers
-    return [completedCode, urMutation]
+    return [completedCode, urMutation, codeRank]
 
 def backstoryGen(origin):
     backstoriesBaby = genOriginStory[0], genOriginStory[1]
@@ -63,6 +63,31 @@ def appearanceGen():
         oddHairColor = genHairColor[mutantPile(genHairColor)]
     return oddAppearance, oddHairColor
 
+def extraPile(extra):
+    extra = genExtras[mutantPile(genExtras)]
+    return extra
+
+def buddyPile(buddy):
+    buddy = genBuddyAttitude[mutantPile(genBuddyAttitude)]
+    return buddy
+
+
+def buddyGen():
+    buddyOpinion = buddyPile(genBuddyAttitude)
+    buddyEvent = ""
+    extraFinal = ""
+    
+    if buddyOpinion in genBuAtPos:
+        buddyEvent = genBuPosRes[mutantPile(genBuPosRes)]
+        extraFinal = genExtrasPN[mutantPile(genExtrasPN)]
+        return buddyOpinion, buddyEvent, extraFinal
+    
+    if buddyOpinion in genBuAtNeg:
+        buddyEvent = genBuNegRes[mutantPile(genBuNegRes)]
+        extraFinal = genExtrasNN[mutantPile(genExtrasNN)]
+        return buddyOpinion, buddyEvent, extraFinal
+
+
 def mutantGen():
     physicalAppearance = genPhysicalAppearance[mutantPile(genPhysicalAppearance)]
     appearanceGenCarrier = appearanceGen()
@@ -71,7 +96,8 @@ def mutantGen():
     hairType = genHairType[mutantPile(genHairType)]
     eyeColor = genEyeColor[mutantPile(genEyeColor)]
     eyeType = genEyeType[mutantPile(genEyeType)]
-    extras = genExtras[mutantPile(genExtras)]
+    buddyGenCarrier = buddyGen()
+    extras = buddyGenCarrier[2]
     mishaps = genMishaps[mutantPile(genMishaps)]
     codeGenCarrier = codeGen()
     mutationType = codeGenCarrier[1]
@@ -79,6 +105,14 @@ def mutantGen():
     originStory = genOriginStory[mutantPile(genOriginStory)]
     backstoryGenCarrier = backstoryGen(originStory)
     finalCode = codeGenCarrier[0]
+    buddyAttitude = buddyGenCarrier[0]
+    normalBuddyAttitude = "You get along {along} with your fellow mutants.".format(along=buddyAttitude)
+    buddyEvent = buddyGenCarrier[1]
+    normalBuddyEvent = buddyEvent
+    if codeGenCarrier[2] == "001" or codeGenCarrier[2] == "004":
+        urNumber = codeGenCarrier[2]
+        normalBuddyAttitude = "As a {num}-type mutant, you don't get exposure to other mutants for the most part.".format(num=urNumber)
+        normalBuddyEvent = genMutantWish[mutantPile(genMutantWish)] 
     caretakerDescriptor = genCaretakerDescriptor[mutantPile(genCaretakerDescriptor)]
     caretakerAppearance = genCaretakerAppearance[mutantPile(genCaretakerAppearance)]
     caretakerPersonality = genCaretakerPersonality[mutantPile(genCaretakerPersonality)]
@@ -87,16 +121,17 @@ def mutantGen():
 
     mutantDone = '''\
     Your Facility code is {fCode}.
-    You are a {pApp} mutant with {hairT} {hairC} hair and {eyeT} {eyeC} eyes.
+    You are a{pApp} mutant with {hairT} {hairC} hair and {eyeT} {eyeC} eyes.
     Your mutation is {mutT}, and you suffer from {medP}. {oddA}
     You came to the Facility {orS}. {backG}
     {extr}
     {mish}
+    {getA} {getE}
     One of your usual caretakers is a {careD} {careA} scientist, who {careP} You {careV}\
-'''.format(fCode=str(finalCode), pApp=physicalAppearance, hairT=hairType, hairC=hairColor, eyeT=eyeType, eyeC=eyeColor, mutT=mutationType, medP=medicalProblems, oddA=oddAppearance, orS=originStory, backG=backstoryGenCarrier, extr=extras, mish=mishaps, careD=caretakerDescriptor, careA=caretakerAppearance, careP=caretakerPersonality, careV=caretakerView)
+'''.format(fCode=str(finalCode), pApp=physicalAppearance, hairT=hairType, hairC=hairColor, eyeT=eyeType, eyeC=eyeColor, mutT=mutationType, medP=medicalProblems, oddA=oddAppearance, orS=originStory, backG=backstoryGenCarrier, extr=extras, mish=mishaps, careD=caretakerDescriptor, careA=caretakerAppearance, careP=caretakerPersonality, careV=caretakerView, getA=normalBuddyAttitude, getE=normalBuddyEvent)
     return mutantDone
 
-genPhysicalAppearance = ["sickly", "nervous", "confident", "relatively normal", "very unstable", "aloof", "uncaring", "overly friendly", "kindhearted", "typical", "unusual", "peppy", "dour", "positive", "tough", "determined"]
+genPhysicalAppearance = [" sickly", " nervous", " confident", " relatively normal", " very unstable", "n aloof", "n uncaring", "n overly friendly", " kindhearted", " typical", "n unusual", " peppy", " dour", " positive", " tough", " determined"]
 genHairColor = ["brown", "black", "blonde", "red", "ginger", "gray", "white",]
 genHairType = ["straight", "curly", "coarse", "fluffy", "shaggy", "wavy", "spiky", "coily"]
 genEyeColor = ["brown", "black", "gray", "white", "yellow", "red", "orange", "hazel", "purple", "blue", "green", "pink"]
@@ -108,13 +143,25 @@ genMutation004 = ['spitting acid', 'combustion', 'uncontrollable rage', 'mental 
 genMutationType = genMutation001 + genMutation002 + genMutation003 + genMutation004
 genMedicalProblems = ["crippling migraines", "stomach pain", "heart irregularity", "breathing troubles", "fragile skin", "vertigo", "chronic pain", "forgetfulness", "difficulty getting around", "sensory overload", "crippling anxiety", "obsessive compulsions", "restlessness", "joint pain", "toothaches", "nerve pain", "spinal issues", "temperature sensitivity", "a poor immune system", "chronic fatigue", "endless paranoia", "hemophilia", "intrusive thoughts", "spinal issues", "mouth problems", "ear issues", "an inability to focus", "exhaustion", "shortness of breath", "compulsive itching", "spontaneous pain", "constant coughing", "having a scratchy throat", "mouth pain", "difficulty sleeping", "trouble staying awake", "overt clumsiness", "delusions", "varying hallucinations", "spasms", "compulsive rocking"]
 genOriginStory = ["as a baby, taken at birth", "as a baby, given willingly by your parents", "as a child, for utilizing your mutation publicly", "as a child, handed over by tired parents", "as a child, caught as a runaway", "as a child, because you thought it would be fun", "as a child, as the result of a thorough investigation", "as an adult, caught out by accident", "as an adult after turning yourself in", "as an adult, betrayed by those you loved"]
-genExtras = ["You have a lot of hobbies, and some of the other subjects find it annoying.", "You wish you could be outside.", "You've grown very attached to one of the scientists that tends to you.", "You're always trying to earn the scientists' approval.", "Your main goal is to escape one day.", "You want to become a scientist.", "You're surprisingly popular amongst the other subjects.", "The other subjects are nervous around you.", "You value your life over that of others.", "You wish you could save everyone.", "You kind of enjoy the fight testing.", "You're just doing your best to survive.", "You feel like you might not be around for much longer.", "You think some of the other subjects deserve to be terminated.", "You feel envious of the subjects that receive special treatment.", "Sometimes it's hard not to feel inferior to everyone else.", "You feel like the scientists are always watching you.", "You're always watching and gauging the danger levels of the other subjects."]
+genExtrasPos = ["You're surprisingly popular in the facility.", "You wish you could save everyone.", "Sometimes it's hard not to feel inferior to everyone else.",]
+genExtrasNeg = ["The other subjects are nervous around you.", "You value your life over that of others.", "You think some of the other subjects deserve to be terminated.",]
+genExtrasNeu = ["You have a lot of hobbies, and they're one of your few joys.", "You wish you could be outside.", "You've grown very attached to one of the scientists that tends to you.", "You're always trying to earn the scientists' approval.", "Your main goal is to escape one day.", "You want to become a scientist.", "You kind of enjoy the fight testing.", "You're just doing your best to survive.", "You feel like you might not be around for much longer.", "You feel envious of other subjects sometimes.", "You feel like the scientists are always watching you.", "You're always watching and gauging the danger levels of the other subjects."]
+genExtras = genExtrasPos + genExtrasNeg + genExtrasNeu
+genExtrasPN = genExtrasPos + genExtrasNeu
+genExtrasNN = genExtrasNeg + genExtrasNeu
 genMishaps = ["One time, you tried to eat soap, and the scientists had to wrestle it away from you.", "At some point, you snapped and tried to fight a scientist, and they look upon you more strictly as a result.", "You've gone out of your way to try befriending the scientists, to varying levels of success.", "You crawled in a drawer and pretended to be clothes once.", "You stayed in the bathroom hiding from the cameras for so long the scientists thought you were dead.", "You attempted to create a revolution one time, but you just got scolded.", "The time you made a campfire out of your study room is commonly recounted as the time the Facility found out their fire alarms were broken.", "After oversleeping for basically every event in your life, the scientists eventually shoved an alarm clock directly into your pillow.", "Trying to escape through a wall was not your best idea, because you had to get yanked out in a very unflattering fashion.", "Your refusal to eat your vegetables is so notorious that short of physical restraints, the scientists always have to bribe you.", "You fixate very intensely on a single one of your studies, and it distracts you from everything else.", "Sometimes you try to hide from the scientists, but they always know where you are. You keep doing it anyways.", "You've memorized your daily routine to the point that any deviation throws you off.", "You leave your sink running because you like the noise, and the scientists keep telling you to shut it off.", "You demanded enrichment, and when the scientists gave you multicolored books, you turned them into origami and bounced them off your cell walls."]
 genBabystories = ["You wonder what it would be like to have a real family.", "You wonder if you family hated you.", "You're convinced your real family will come and get you one day.", "You think one of your parents might be a scientist.", "A life growing up in the Facility has left you used to the monotony.", "You think some of the scientists might view you as your own.", "You grew up alongside another subject and are very protective of them."]
 genChildstories = ["You miss playing outside like you used to.", "You hope your friends are okay.", "You wonder if your family is still thinking about you.", "You hold a lot of regrets.", "You wish you were better to the people around you.", "You try to cling to your good memories.", "You miss your parents.", "Sometimes you try to think of some of the scientists as your family, but it's not the same.", "The world is so dull now.", "You grew up alongside another subject and are very protective of them."]
 genAdultstories = ["You wonder if everything was worth it.", "Your life has been a mess, and you wonder if this place will make it worse.", "You've been through enough to try and stay optimistic, but it's hard.", "Holding a job was better than being in this place.", "If your family is still out there, you hope they're okay.", "You wonder if the choices you made in life were the right ones.", "You wonder if you got what was coming to you."]
 genBonusAppearance = ["You have small horns.", "Your eyes are slitted.", "Your skin is discolored in some places.", "You have scaly formations in some spots on your skin.", "You have a tail.", "Your hair is bi-colored.", "Your eyes have additional colors in them.", "Your pupils are strangely shaped.", "There are tattoo-like markings on your skin.", "Your skin sometimes takes on an unusual tint.", "Your anatomy has always been a bit unusual.", "Your hair is strangely colored at the ends.", "Your teeth are sharper than usual."]
 genBonusHairColors = ["blue", "pink", "purple", "green"]
+
+genBuAtPos = ["wonderfully", "well enough", "a lot", "most of the time", "with enthusiasm", "willingly"]
+genBuAtNeg = ["poorly", "warily", "badly", "reluctantly", "hesitantly", "against your will"]
+genBuddyAttitude = genBuAtPos + genBuAtNeg
+genBuPosRes = ["You learned how to draw with a few new friends.", "One time, a food fight broke out, and you had fun, even if you got scolded afterwards.", "You and the others have friendly competitions sometimes."]
+genBuNegRes = ["You wish you could fight the other mutants more.", "You feel relief when an annoying subject gets terminated.", "You got into a brawl once, and came out on top. The scolding was worth it."]
+genMutantWish = ["You wish you could talk with the other mutants.", "You wonder what it would be like to make friends.", "You try not to focus too much on the isolation.", "Maybe if you're good enough, you'll be allowed to see them.", "You've heard bad things, so you'd rather stay away from the other mutants anyways.", "You find the other mutants intimidating, so you don't mind.", "The few times you do see them, you can't help but envy them sometimes."]
 
 genCaretakerDescriptor = ["frumpy", "absentminded", "skittish", "serious", "excitable", "gentle", "curious", "irritable", "calm", "eerie", "neurotic"]
 genCaretakerAppearance = ["older", "younger", "new", "experienced", "mainstay", "grunt", "high-ranking"]

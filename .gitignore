@@ -82,6 +82,20 @@ target/
 profile_default/
 ipython_config.py
 
+#stuff
+gens/__pycache__/stalkers.cpython-311.pyc
+PAFLGen_Enhanced.py
+gens/__pycache__/scientists.cpython-311.pyc
+gens/__pycache__/mutants.cpython-311.pyc
+__pycache__/stalkers.cpython-311.pyc
+__pycache__/scientists.cpython-311.pyc
+__pycache__/PAFLGen_Enhanced.cpython-311.pyc
+__pycache__/mutants.cpython-311.pyc
+__pycache__/GUI.cpython-311.pyc
+.gitignore
+.vscode/launch.json
+
+
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
 #   intended to run in multiple environments; otherwise, check them in:
